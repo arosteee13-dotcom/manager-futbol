@@ -11,6 +11,8 @@
 - Estructura de ligas: Liga Suprema (20 equipos, 38 jornadas) y Liga Ascenso (22 equipos, 42 jornadas), con ascensos, descensos y play-off.
 - Cada club tiene un objetivo de la directiva (título, ascenso, play-off, salvarse...) según su nivel.
 - Los partidos se simulan por ocasiones: posesión, tiros, goles, tarjetas y MVP. Se puede cambiar la táctica en directo (máx. 3 cambios).
+- Competiciones: se elige país, competición (ligas y copas) y sección. El calendario va por jornadas con flechas, las estadísticas muestran seis fichas (goleador, asistente, mejor valorado, mejor portero, amarillas y rojas) y el palmarés histórico ordena los clubes por títulos. La clasificación muestra la tabla completa con zonas, y hay calendario por jornadas, estadísticas (goleadores y asistencias) y palmarés de campeones. El GRL del país se calcula con la media del once de sus clubes (top-5 al 70 % y el resto al 30 %).
+- El calendario de la temporada muestra todos los partidos de liga y copa del club, con el próximo marcado en verde, el resultado de los jugados y un resumen de jugados, por jugar, ganados, empates y perdidos.
 - El inicio muestra el próximo partido (con jugar o simular), la clasificación con el club en contexto y un resumen de finanzas (ingresos, sueldos y margen). La liga genera calendario, resultados y tabla a partir de los clubs de Segunda.
 - Los atributos del once modulan el juego: tiro y regate en el ataque, pase en la creación, defensa y físico atrás, reflejos y colocación en la portería, y ritmo y juego de pies en el ritmo del partido.
 - Las partidas se guardan en 3 ranuras en el navegador y se pueden exportar e importar en JSON.
