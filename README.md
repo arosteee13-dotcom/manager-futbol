@@ -15,7 +15,7 @@
 - Los atributos del once modulan el juego: tiro y regate en el ataque, pase en la creación, defensa y físico atrás, reflejos y colocación en la portería, y ritmo y juego de pies en el ritmo del partido.
 - Las partidas se guardan en 3 ranuras en el navegador y se pueden exportar e importar en JSON.
 - Banderas: 219 dibujadas en SVG, las 211 selecciones FIFA más los ocho países sin selección (Mónaco, Vaticano, Nauru, Tuvalu, Palau, Islas Marshall, Micronesia y Kiribati). Las que no están en el catálogo muestran una placa con su código.
-- Clubes de Segunda: Ribera FC, UD Torre Blanca, CD Marea Alta, UD Llanura, CD Ebro Norte y CD Sol del Sur (Málaga, 1948), cada uno con su plantilla de 23 y su formación.
+- Clubes de Segunda: Ribera FC, UD Torre Blanca, CD Marea Alta, UD Llanura, CD Ebro Norte, CD Sol del Sur (Málaga, 1948), SD Ría Vieja (Bilbao, 1913) y CD Alcazaba (Almería, 1955), cada uno con su plantilla de 23 y su formación.
 - Escudos: cada club tiene el suyo, dibujado a medida a partir de su historia y sus colores (el barco de los pescadores del Ribera, la torre de Villaluz, la luna de La Caleta, la rueda del tren del Llanura, el arco sobre el Ebro, el faro del Lido o el obelisco del Rioplatense). El filial hereda el del primer equipo con una insignia B.
 - Trofeos: cada competición española tiene su propia forma, no solo su color. Primera es una copa con tapa y estrella, Segunda una copa lisa sin asas, Tercera un plato de campeón sobre peana, la Copa de la Corona una copa de dos asas y la Supercopa de Campeones un monolito coronado por una estrella.
 - Diseño: azul oscuro, verde para confirmar, rojo para atrás o rechazar, iconos SVG sin emojis.
