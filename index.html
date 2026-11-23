@@ -3904,7 +3904,7 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke
   var PAIS_SEL = 'ES';
   /* Divisiones por país: España tiene Primera a Cuarta en el juego; el resto, una */
   var PAIS_DIVS = {ES:4};
-  var DIV_SEL = '2', DIV_ICO = {'1':'1ª','2':'2ª','3':'3ª','4':'4ª'};
+  var DIV_SEL = '1', DIV_ICO = {'1':'1ª','2':'2ª','3':'3ª','4':'4ª'};
   function renderClubes(){
     var pn = PAISES[PAIS_SEL] || PAIS_SEL;
     document.getElementById('sel-pais').innerHTML = '<span class="ic">'+flagSVG(PAIS_SEL, 22)+'</span><span class="tx"><small>País</small><b>'+pn+'</b></span>';
@@ -9492,7 +9492,7 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke
     var kind = b.getAttribute('data-kind'), val = b.getAttribute('data-opt');
     if(kind === 'mpais' || kind === 'mdiv'){ if(kind === 'mdiv') MOVSEL.nv = val; cerrarCompSheet(); abrirMov(); return; }
     if(kind === 'spais' || kind === 'sdiv'){
-      if(kind === 'spais'){ PAIS_SEL = val; DIV_SEL = val === 'ES' ? '2' : '1'; } else DIV_SEL = val;
+      if(kind === 'spais'){ PAIS_SEL = val; DIV_SEL = '1'; } else DIV_SEL = val;
       cerrarCompSheet(); renderClubes(); return;
     }
     COMP[kind] = val;
