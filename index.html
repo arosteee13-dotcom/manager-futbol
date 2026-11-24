@@ -274,6 +274,10 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke
   border:1.5px solid #1f5a33;background:repeating-linear-gradient(180deg,#3a8247 0 12.5%,#33753f 12.5% 25%);
   box-shadow:0 8px 22px rgba(0,0,0,.4),inset 0 0 40px rgba(0,30,10,.35)}
 .tacpitch>svg{position:absolute;inset:0;width:100%;height:100%}
+.poswarn{display:flex;align-items:flex-start;gap:7px;margin:-2px 0 10px;padding:7px 9px;border:1px solid rgba(245,166,35,.34);border-radius:10px;background:rgba(245,166,35,.09);font-size:10.5px;line-height:1.35}
+.poswarn svg{flex:none;width:14px;height:14px;margin-top:1px;fill:#f5a623;stroke:#0b1a33;stroke-width:.7;stroke-linejoin:round}
+.poswarn b{display:block;color:#ffc46b;font-size:9.5px;font-weight:800;letter-spacing:.07em;text-transform:uppercase}
+.poswarn span{display:block;color:#e7d2ac}
 .tk{position:absolute;transform:translate(-50%,-40%);width:60px;background:none;border:0;padding:0;cursor:pointer;font-family:inherit}
 .tk svg{display:block;width:100%;height:auto;overflow:visible}
 .tk text{font-family:inherit;pointer-events:none}
@@ -352,6 +356,10 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke
 .btn-auto{position:absolute;top:8px;right:8px;z-index:5;width:34px;height:34px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);border-radius:10px;color:#fff;opacity:.75;cursor:pointer;padding:0}
 .btn-auto .i{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .btn-auto:active{transform:scale(.97)}
+.btn-auto.run{animation:autoPop .48s cubic-bezier(.2,.8,.3,1)}
+.btn-auto.run .i{animation:autoFlip .48s cubic-bezier(.2,.8,.3,1)}
+@keyframes autoPop{0%{transform:scale(1);box-shadow:0 0 0 0 rgba(255,255,255,.5)}38%{transform:scale(.84);box-shadow:0 0 0 7px rgba(255,255,255,0)}100%{transform:scale(1);box-shadow:0 0 0 0 rgba(255,255,255,0)}}
+@keyframes autoFlip{0%{transform:rotate(0) scale(1)}45%{transform:rotate(145deg) scale(1.18)}100%{transform:rotate(180deg) scale(1)}}
 .dash{display:flex;flex-direction:column;gap:10px}
 .cron{background:#f2ead9;color:#241d15;border-radius:12px;padding:11px 13px 10px;font-family:Georgia,'Times New Roman',serif;box-shadow:0 6px 18px rgba(0,0,0,.28);border:1px solid #d8cbb0}
 .cron-top{display:flex;justify-content:space-between;align-items:baseline;font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;border-bottom:2px solid #241d15;padding-bottom:5px;font-family:-apple-system,system-ui,sans-serif;font-weight:700}
@@ -7406,7 +7414,7 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke
     return '<svg class="i" viewBox="0 0 24 24" style="width:16px;height:16px;color:'+c+'"><circle cx="12" cy="12" r="9"/><path d="M9 9.5v.5M15 9.5v.5"/><path d="'+b+'"/></svg>';
   }
   function nivelCol(v){ return v >= 70 ? '#22C55D' : v >= 40 ? '#EBB305' : '#EF4444'; }
-  /* Energía y moral: provisionales (100 % y 70 %) hasta que el juego las simule. */
+  /* Energía y moral: se gastan en los partidos y se recuperan cada jornada. */
   function dispDe(p, club){
     var c = club || selClub, inj = c ? lesionDe(c, p) : null, san = c ? sancionDe(c, p) : null;
     if(inj) return {txt: inj.ill ? 'Enfermo' : 'Lesionado', col: MED_TIER[inj.tier] || '#e0505a'};
@@ -13322,12 +13330,20 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke
   /* ===== Alineación guardada por club: orden = once (por huecos) + 7 suplentes + reservas ===== */
   var TSEL = null;
   function byN(c, n){ for(var i=0;i<c.plantilla.length;i++){ if(c.plantilla[i].n === n) return c.plantilla[i]; } return null; }
-  function valEn(p){ var e = (p.en == null ? 100 : p.en); return p.ovr * (1 - Math.max(0, 82 - e) * 0.0032 - Math.max(0, 60 - e) * 0.006); }
-  /* convocatoria por defecto: 1 portero, uno por cada puesto del once y el resto por GRL; los cansados (<60) solo si no hay otro */
+  /* Rendimiento según la energía: por debajo de 70 empieza a notarse de verdad en el campo */
+  function enFac(p){
+    var e = (p.en == null ? 100 : p.en);
+    if(e >= 80) return 1;
+    if(e >= 70) return 1 - (80 - e) * 0.003;
+    if(e >= 60) return 0.97 - (70 - e) * 0.007;
+    return Math.max(0.66, 0.90 - (60 - e) * 0.008);
+  }
+  function valEn(p){ return p.ovr * enFac(p); }
+  /* convocatoria por defecto: 1 portero, uno por cada puesto del once y el resto por GRL; los cansados (<70) solo si no hay otro */
   function convAuto(c, xiNs){
     var xi = {}; xiNs.forEach(function(n){ xi[n] = 1; });
-    var rest = c.plantilla.filter(function(p){ return !xi[p.n]; });
-    var fresh = rest.filter(function(p){ return (p.en == null ? 100 : p.en) >= 60 || posDe(p) === 'POR'; });
+    var rest = c.plantilla.filter(function(p){ return !xi[p.n] && !ausenteDe(c, p); });
+    var fresh = rest.filter(function(p){ return (p.en == null ? 100 : p.en) >= 70 || posDe(p) === 'POR'; });
     var tired = rest.filter(function(p){ return fresh.indexOf(p) < 0; });
     var byV = function(a,b){ return valEn(b) - valEn(a); };
     var sup = fresh.filter(function(p){ return posDe(p) === 'POR'; }).sort(byV).slice(0,1);
@@ -13362,7 +13378,11 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke
   /* orden guardado tal cual lo dejó el usuario (lesionados y sancionados se quedan donde están) */
   function ordenVista(c){
     var sv = saves[slotAct], o = sv && sv.once && sv.once[c.id], res;
-    if(o && o.length === c.plantilla.length && o.every(function(n){ return byN(c, n); })) res = o.slice();
+    if(o && o.length && o.every(function(n){ return byN(c, n); })){
+      /* puede faltar algún jugador si la lista se guardó sin los lesionados: se añaden al final */
+      res = o.slice();
+      c.plantilla.forEach(function(p){ if(res.indexOf(p.n) < 0) res.push(p.n); });
+    }
     else {
       var xi = c.formacion.xi.map(function(q){ return q.n; });
       if(!xi.every(function(n){ return byN(c, n); })) res = onceAuto(c);
@@ -13384,26 +13404,39 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke
   }
   function convocatoria(c, ui){
     var o = ui ? ordenUI(c) : ordenDe(c), P = function(n){ return byN(c, n); };
-    return {sup: o.slice(11,20).map(P), res: o.slice(20).map(P)};
+    var fit = function(p){ return p && !ausenteDe(c, p); };
+    return {sup: o.slice(11,20).map(P).filter(fit), res: o.slice(20).map(P).filter(fit)};
   }
-  /* Once automático: por hueco, primero su posición, luego la parecida, luego GRL con energía; los huecos con menos candidatos primero */
+  /* Once automático: prioriza a los que están al 70% o más de energía; si no hay recambio, mantiene al titular y su aviso de posición */
   function onceAuto(c){
-    var slots = c.formacion.xi, used = {}, pick = new Array(slots.length);
+    var slots = c.formacion.xi, used = {}, pick = new Array(slots.length), EN_MIN = 70;
     var tier = function(p, code){
       var ps = posSet(p), ln = lineaDe(code).k;
       /* 4: su posición principal; 3: una posición que sabe jugar; 2 y 1: solo si no queda nadie que la sepa (misma línea) */
       return ps[0] === code ? 4 : ps.indexOf(code) >= 0 ? 3 : lineaDe(ps[0]).k === ln && ps[0] !== 'POR' && code !== 'POR' ? 2 : ps.some(function(x){ return x !== 'POR' && code !== 'POR' && lineaDe(x).k === ln; }) ? 1 : 0;
     };
+    var en = function(p){ return p.en == null ? 100 : p.en; };
     var cnt = slots.map(function(q){ return c.plantilla.filter(function(p){ return tier(p, q.pos) >= 3 && !ausenteDe(c, p); }).length; });
     slots.map(function(_, i){ return i; }).sort(function(a,b){ return cnt[a] - cnt[b]; }).forEach(function(i){
-      var best = null, bs = -1;
-      [true, false].forEach(function(soloFrescos){
-        if(best) return;
+      var code = slots[i].pos;
+      /* 1-3: recambio fresco, de su posición a la misma línea. 4-5: si no hay nadie fresco, se queda el mejor de su posición. 6-7: relleno */
+      var passes = [
+        function(p){ var t = tier(p, code); return t >= 3 && en(p) >= EN_MIN ? t * 100 + valEn(p) : -1e9; },
+        function(p){ var t = tier(p, code); return t >= 2 && en(p) >= EN_MIN ? t * 100 + valEn(p) : -1e9; },
+        function(p){ var t = tier(p, code); return t >= 1 && en(p) >= EN_MIN ? t * 100 + valEn(p) : -1e9; },
+        function(p){ var t = tier(p, code); return t >= 3 ? t * 100 + valEn(p) : -1e9; },
+        function(p){ var t = tier(p, code); return t >= 1 ? t * 100 + valEn(p) : -1e9; },
+        function(p){ return en(p) >= EN_MIN ? 50 + valEn(p) : -1e9; },
+        function(p){ return valEn(p); }
+      ];
+      var best = null, bs = -1e9;
+      passes.some(function(score){
         c.plantilla.forEach(function(p){
-          if(used[p.n] || ausenteDe(c, p)) return; if(soloFrescos && (p.en == null ? 100 : p.en) < 60) return;
-          var t = tier(p, slots[i].pos), v = t * 100 + valEn(p);
-          if(t > 0 && v > bs){ bs = v; best = p; }
+          if(used[p.n] || ausenteDe(c, p)) return;
+          var v = score(p);
+          if(v > bs){ bs = v; best = p; }
         });
+        return !!best;
       });
       if(!best){ c.plantilla.forEach(function(p){ if(!best && !used[p.n] && !ausenteDe(c, p)) best = p; }); }
       if(!best){ c.plantilla.forEach(function(p){ if(!best && !used[p.n]) best = p; }); }
@@ -13428,6 +13461,14 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke
   }
   var AUTO_BTN = '<button class="btn-auto" data-auto="1" aria-label="11 automático"><svg class="i" viewBox="0 0 24 24"><path d="M5 19L16 8M14 6l1-3 1 3 3 1-3 1-1 3-1-3-3-1zM18 14l.7-2 .7 2 2 .7-2 .7-.7 2-.7-2-2-.7z"/></svg></button>';
   /* Campo con el once; items = [{p,pos,x,y,extra,sel}]. Sirve para la pantalla de tácticas y para la táctica en directo */
+  function posWarnHTML(c, xi){
+    var outs = [];
+    xi.forEach(function(q){ var p = byN(c, q.n); if(p && posSet(p).indexOf(q.pos) < 0) outs.push({p:p, pos:q.pos}); });
+    if(!outs.length) return '';
+    var nombres = outs.slice(0, 3).map(function(x){ return surname(x.p.nom)+' ('+x.pos+')'; }).join(' · ');
+    if(outs.length > 3) nombres += ' · +' + (outs.length - 3);
+    return '<div class="poswarn"><svg viewBox="0 0 24 24"><path d="M12 3.2L2.4 20.2h19.2z"/><path d="M12 9v5.2M12 17.3v.1" fill="none" stroke="#0b1a33" stroke-width="1.8" stroke-linecap="round"/></svg><div><b>'+outs.length+(outs.length === 1 ? ' jugador fuera de posición' : ' jugadores fuera de posición')+'</b><span>'+nombres+'</span></div></div>';
+  }
   function campoXI(items, boton){
     var h = '<div class="tacpitch">'+(boton || '')+CAMPO_SVG;
     var ys = items.map(function(q){ return q.y; }), ysMid = (Math.min.apply(null, ys) + Math.max.apply(null, ys)) / 2;
@@ -13467,6 +13508,7 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke
     if(inj.length || san.length) h += bajasHTML(inj.concat(san));
     xi.forEach(function(q){ var p = byN(c, q.n); if(p) items.push({p:p, pos:q.pos, x:q.x, y:q.y, sel:TSEL === p.n, inj:!!lesionDe(c, p), red:!!sancionDe(c, p)}); });
     h += campoXI(items, AUTO_BTN);
+    h += posWarnHTML(c, xi);
     var cv = convocatoria(c, true);
     h += '<div class="sec">Suplentes<span class="n">'+cv.sup.length+' convocados</span></div><div class="tkgrid">';
     cv.sup.forEach(function(p){ h += tokenHTML(p, posDe(p), '', TSEL === p.n, !!lesionDe(c, p), false, !!sancionDe(c, p)); });
@@ -14266,7 +14308,9 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke
     el.querySelectorAll('[data-dfree]').forEach(function(n){ n.addEventListener('click', function(){ dorsalClick(c, el, null, +n.getAttribute('data-dfree')); }); });
     el.querySelectorAll('[data-auto]').forEach(function(n){ n.addEventListener('click', function(){
       if(slotAct < 0 || !saves[slotAct]){ toast('La alineación se cambia dentro de una partida'); return; }
-      guardarOrden(c, onceAuto(c)); TSEL = null; ctPos[curHS] = el.scrollTop; renderHub(false); toast('Once automático elegido');
+      guardarOrden(c, onceAuto(c)); TSEL = null; ctPos[curHS] = el.scrollTop; renderHub(false);
+      var autoBtn = el.querySelector('.btn-auto');
+      if(autoBtn){ autoBtn.classList.remove('run'); void autoBtn.offsetWidth; autoBtn.classList.add('run'); setTimeout(function(){ autoBtn.classList.remove('run'); }, 520); }
     }); });
     el.querySelectorAll('[data-bl]').forEach(function(b){ b.addEventListener('click', function(){ bdLin = b.getAttribute('data-bl'); ctPos[curHS] = el.scrollTop; renderHub(false); }); });
     el.querySelectorAll('.pl, .fi, .trp[data-n]').forEach(function(n){ n.addEventListener('click', function(e){ if(e.target.closest('[data-visit]')) return; cardJugador(n, c); }); });
@@ -14455,8 +14499,8 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke
     return 'MED';
   }
   function atrMap(p){
-    var o = {};
-    atributos(p).forEach(function(a){ o[a.k] = a.v; });
+    var o = {}, f = enFac(p);
+    atributos(p).forEach(function(a){ o[a.k] = a.v * f; });
     return o;
   }
   var FIT_BASE = {
@@ -14490,7 +14534,7 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke
   function internalTacticFit(c, lin, ment, pres, style){
     var out = {atk:0, mid:0, def:0, reason:'', details:[]};
     if(!c || !lin || !lin.length) return out;
-    var teamAvg = lin.reduce(function(a,s){ return a + s.p.ovr; }, 0) / lin.length;
+    var teamAvg = lin.reduce(function(a,s){ return a + s.p.ovr * enFac(s.p); }, 0) / lin.length;
     var groups = {DEF:[], MED:[], DEL:[]}, details = [];
     lin.forEach(function(s){
       if(!s || !s.p || s.pos === 'POR') return;
@@ -14522,7 +14566,7 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke
     var g = {POR:[], DEF:[], MED:[], ATA:[]}, t = {TIR:[], CRE:[], DEFE:[], GK:[], RIT:[], PIE:[]};
     arr.forEach(function(j){
       var gr = grupo(j.pos), a = atrMap(j.p);
-      g[gr].push(j.p.ovr);
+      g[gr].push(j.p.ovr * enFac(j.p));
       if(gr === 'ATA') t.TIR.push(a.TIR);
       if(gr === 'MED') t.CRE.push(a.PAS);
       if(gr === 'DEF') t.DEFE.push((a.DEF + a.FIS) / 2);

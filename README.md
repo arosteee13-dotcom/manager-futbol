@@ -13,6 +13,7 @@
 - El GRL es la valoración del jugador (escala 1-99). Verde por franjas: 71-80 es una franja, 78+ es la más alta.
 - Estadísticas del jugador: muestran el total de la temporada y solo las competiciones que su club juega ese curso: su división, la copa nacional si participa y la competición continental si está clasificado. Las tarjetas de competiciones que no juega no aparecen.
 - La formación habitual (por ejemplo 4-3-3) guarda los once titulares con su posición en el campo. El resto es banquillo.
+- Energía y once automático: un jugador por debajo del 70 % de energía rinde menos en el partido y el 11 automático busca un recambio fresco, aunque tenga que adelantar su posición. Si no hay ningún recambio para ese puesto, se queda el titular y se mantiene el aviso de «fuera de posición» en su ficha y en el resumen de la alineación.
 - Cada jugador tiene trayectoria: temporada, club, tipo, nivel, fichaje, PJ, goles, asistencias y nota.
 - Estructura de ligas: Liga Suprema (20 equipos, 38 jornadas) y Liga Ascenso (22 equipos, 42 jornadas), con ascensos, descensos y play-off.
 - Cada club tiene un objetivo de la directiva (título, ascenso, play-off, salvarse...) según su nivel.
